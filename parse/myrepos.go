@@ -51,7 +51,12 @@ func LoadMRConfig() (MRConfig, error) {
 	length := -1
 	mode := "default"
 	for n, line := range lines {
+		line = strings.TrimSpace(line)
 		if line == "" {
+			continue
+		}
+		// ignore comments in mrconfig
+		if strings.HasPrefix(line, "#") {
 			continue
 		}
 		if line == "[DEFAULT]" {
