@@ -21,6 +21,7 @@ mg supports loading an existing ~/.mrconfig and migrating it to ~/.config/mg.con
 1. No external dependencies (except for git) 
 1. More output options (summary of failures)
 1. More deterministic behavior (global vs local run)
+1. Exports public functions and can be embedded into other Go programs idiomatically
 
 
 ## Why to stick with mr:
