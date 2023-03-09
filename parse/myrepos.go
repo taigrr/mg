@@ -10,13 +10,13 @@ import (
 )
 
 type MRConfig struct {
-	Unregister string
-	GC         string
-	Repos      []Repo
+	Repos   []Repo
+	Aliases map[string]string
 }
 type Repo struct {
 	Path     string
 	Checkout string
+	Aliases  map[string]string
 }
 
 func (m MRConfig) GetRepoPaths() []string {
@@ -82,12 +82,15 @@ func LoadMRConfig() (MRConfig, error) {
 				return MRConfig{}, fmt.Errorf("unexpected argument on line %d: %s", n, line)
 			}
 			config.Repos[length].Checkout = split[1]
+
 		case "default":
+
+			// TODO load text into Aliases map instead of hardcoded Unregister prop
 			switch split[0] {
 			case "unregister":
-				config.Unregister = split[1]
+				config.Aliases["unregister"] = split[1]
 			case "git_gc":
-				config.GC = split[1]
+				config.Aliases["gc"] = split[1]
 			default:
 				return MRConfig{}, fmt.Errorf("unexpected argument on line %d: %s", n, line)
 			}
