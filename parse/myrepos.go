@@ -46,7 +46,10 @@ func LoadMRConfig() (MRConfig, error) {
 	}
 	text := string(f)
 	lines := strings.Split(text, "\n")
-	config := MRConfig{}
+	config := MRConfig{
+		Aliases: make(map[string]string),
+		Repos:   []Repo{},
+	}
 
 	length := -1
 	mode := "default"
