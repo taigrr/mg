@@ -6,10 +6,17 @@ import (
 	"path/filepath"
 )
 
+// MGConfig is the struct that represents the mgconfig file
+// It contains a slice of Repo structs and a map of aliases
+// The aliases map is a map of strings to strings, where the key is the alias
+// and the value is a command to be run
 type MGConfig struct {
 	Repos   []Repo
 	Aliases map[string]string
 }
+
+// GetRepoPaths returns a slice of strings containing the paths of the repos
+// in the mgconfig file
 
 func (m MGConfig) GetRepoPaths() []string {
 	paths := []string{}
@@ -19,6 +26,9 @@ func (m MGConfig) GetRepoPaths() []string {
 	return paths
 }
 
+// LoadMGConfig loads the mgconfig file from the XDG_CONFIG_HOME directory
+// or from the default location of $HOME/.config/mgconfig
+// If the file is not found, an error is returned
 func LoadMGConfig() (MGConfig, error) {
 	var config MGConfig
 	mgConf := os.Getenv("MGCONFIG")

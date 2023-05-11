@@ -19,6 +19,8 @@ type Repo struct {
 	Aliases  map[string]string
 }
 
+// GetRepoPaths returns a slice of strings containing the paths of all repos
+// in the MRConfig struct
 func (m MRConfig) GetRepoPaths() []string {
 	paths := []string{}
 	for _, r := range m.Repos {
@@ -27,6 +29,9 @@ func (m MRConfig) GetRepoPaths() []string {
 	return paths
 }
 
+// LoadMRConfig loads the mrconfig file from the user's home directory
+// and returns a MRConfig struct
+// TODO: load aliases into map instead of hardcoded Unregister prop
 func LoadMRConfig() (MRConfig, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
