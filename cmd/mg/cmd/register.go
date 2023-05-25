@@ -20,6 +20,9 @@ var registerCmd = &cobra.Command{
 		}
 		if len(args) == 1 {
 			path = args[0]
+		} else if len(args) > 1 {
+			log.Println("too many arguments")
+			os.Exit(1)
 		}
 		r, err := git.PlainOpenWithOptions(path, &(git.PlainOpenOptions{DetectDotGit: true}))
 		if err != nil {

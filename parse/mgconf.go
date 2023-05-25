@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 )
 
+var errAlreadyRegistered = os.ErrExist
+
 // MGConfig is the struct that represents the mgconfig file
 // It contains a slice of Repo structs and a map of aliases
 // The aliases map is a map of strings to strings, where the key is the alias
@@ -27,8 +29,25 @@ func (m MGConfig) GetRepoPaths() []string {
 	return paths
 }
 
-func (m *MGConfig) AddRepo(path, remote string) {
+func (m *MGConfig) DelRepo(path string) error {
+	for i, v := range m.Repos {
+		if v.Path == path {
+			m.Repos = append(m.Repos[:i], m.Repos[i+1:]...)
+			return nil
+		}
+	}
+	return os.ErrNotExist
+}
+
+func (m *MGConfig) AddRepo(path, remote string) error {
+	for _, v := range m.Repos {
+		if v.Path == path {
+			return errAlreadyRegistered
+		}
+	}
+
 	m.Repos = append(m.Repos, Repo{Path: path, Remote: remote})
+	return nil
 }
 
 // LoadMGConfig loads the mgconfig file from the XDG_CONFIG_HOME directory
