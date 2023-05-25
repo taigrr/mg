@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -22,7 +21,6 @@ var registerCmd = &cobra.Command{
 		if len(args) == 1 {
 			path = args[0]
 		}
-		fmt.Printf("register called for %s\n", path)
 		r, err := git.PlainOpenWithOptions(path, &(git.PlainOpenOptions{DetectDotGit: true}))
 		if err != nil {
 			log.Println(err)
@@ -52,7 +50,7 @@ var registerCmd = &cobra.Command{
 		path = newPath.Filesystem.Root()
 		for _, v := range conf.Repos {
 			if v.Path == path {
-				log.Println("repo already registered")
+				log.Printf("repo %s already registered\n", path)
 				os.Exit(1)
 			}
 		}
