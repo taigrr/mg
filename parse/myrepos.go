@@ -14,9 +14,9 @@ type MRConfig struct {
 	Aliases map[string]string
 }
 type Repo struct {
-	Path     string
-	Checkout string
-	Aliases  map[string]string
+	Path    string
+	Remote  string
+	Aliases map[string]string `json:"aliases,omitempty"`
 }
 
 // GetRepoPaths returns a slice of strings containing the paths of all repos
@@ -30,15 +30,16 @@ func (m MRConfig) GetRepoPaths() []string {
 }
 
 func (m MRConfig) ToMGConfig() MGConfig {
-	mgconf := MGConfig{
-		Repos:   []Repo{},
-		Aliases: m.Aliases,
-	}
-	for _, r := range m.Repos {
-		mgconf.Repos = append(mgconf.Repos, Repo{
-			Path:    r.Path,
-			Aliases: r.Aliases,
-		})
+	mgconf := MGConfig(m)
+	for i, repo := range mgconf.Repos {
+		checkout := repo.Remote
+		if strings.HasPrefix(checkout, "git clone '") {
+			// git clone 'git@bitbucket.org:taigrr/mg.git' 'mg'
+			remote := strings.TrimPrefix(checkout, "git clone '")
+			sp := strings.Split(remote, "' '")
+			remote = sp[0]
+			mgconf.Repos[i].Remote = remote
+		}
 	}
 	return mgconf
 }
@@ -103,7 +104,8 @@ func LoadMRConfig() (MRConfig, error) {
 			if split[0] != "checkout" {
 				return MRConfig{}, fmt.Errorf("unexpected argument on line %d: %s", n, line)
 			}
-			config.Repos[length].Checkout = split[1]
+
+			config.Repos[length].Remote = split[1]
 
 		case "default":
 

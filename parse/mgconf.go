@@ -27,6 +27,10 @@ func (m MGConfig) GetRepoPaths() []string {
 	return paths
 }
 
+func (m *MGConfig) AddRepo(path, remote string) {
+	m.Repos = append(m.Repos, Repo{Path: path, Remote: remote})
+}
+
 // LoadMGConfig loads the mgconfig file from the XDG_CONFIG_HOME directory
 // or from the default location of $HOME/.config/mgconfig
 // If the file is not found, an error is returned
