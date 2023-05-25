@@ -2,6 +2,7 @@ package parse
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -53,4 +54,27 @@ func LoadMGConfig() (MGConfig, error) {
 	err = json.Unmarshal(file, &config)
 
 	return config, err
+}
+
+func (m MGConfig) Save() error {
+	mgConf := os.Getenv("MGCONFIG")
+	if mgConf == "" {
+		confDir := os.Getenv("XDG_CONFIG_HOME")
+		if confDir == "" {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
+			confDir = filepath.Join(home, ".config")
+			if _, err := os.Stat(confDir); err != nil {
+				return err
+			}
+		}
+		mgConf = filepath.Join(confDir, "mgconfig")
+	}
+	b, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(mgConf, b, 0o644)
 }

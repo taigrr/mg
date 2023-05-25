@@ -29,6 +29,20 @@ func (m MRConfig) GetRepoPaths() []string {
 	return paths
 }
 
+func (m MRConfig) ToMGConfig() MGConfig {
+	mgconf := MGConfig{
+		Repos:   []Repo{},
+		Aliases: m.Aliases,
+	}
+	for _, r := range m.Repos {
+		mgconf.Repos = append(mgconf.Repos, Repo{
+			Path:    r.Path,
+			Aliases: r.Aliases,
+		})
+	}
+	return mgconf
+}
+
 // LoadMRConfig loads the mrconfig file from the user's home directory
 // and returns a MRConfig struct
 // TODO: load aliases into map instead of hardcoded Unregister prop
