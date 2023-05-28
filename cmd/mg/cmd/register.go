@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -53,8 +54,8 @@ var registerCmd = &cobra.Command{
 		path = newPath.Filesystem.Root()
 		for _, v := range conf.Repos {
 			if v.Path == path {
-				log.Printf("repo %s already registered\n", path)
-				os.Exit(1)
+				fmt.Printf("repo %s already registered\n", path)
+				os.Exit(0)
 			}
 		}
 		conf.AddRepo(path, url)
