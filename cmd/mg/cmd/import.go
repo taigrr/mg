@@ -57,5 +57,5 @@ var importCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(registerCmd)
+	rootCmd.AddCommand(importCmd)
 }
