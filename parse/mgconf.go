@@ -50,11 +50,25 @@ func (m *MGConfig) AddRepo(path, remote string) error {
 	return nil
 }
 
+func (m *MGConfig) Merge(m2 MGConfig) error {
+	for _, v := range m2.Repos {
+		err := m.AddRepo(v.Path, v.Remote)
+		switch err {
+		case errAlreadyRegistered:
+			continue
+		case nil:
+			continue
+		default:
+			return err
+		}
+	}
+	return nil
+}
+
 // LoadMGConfig loads the mgconfig file from the XDG_CONFIG_HOME directory
 // or from the default location of $HOME/.config/mgconfig
 // If the file is not found, an error is returned
 func LoadMGConfig() (MGConfig, error) {
-	var config MGConfig
 	mgConf := os.Getenv("MGCONFIG")
 	if mgConf == "" {
 		confDir := os.Getenv("XDG_CONFIG_HOME")
@@ -74,8 +88,13 @@ func LoadMGConfig() (MGConfig, error) {
 	if err != nil {
 		return MGConfig{}, err
 	}
-	err = json.Unmarshal(file, &config)
+	return ParseMGConfig(file)
+}
 
+// ParseMGConfig parses the mgconfig file from a byte slice
+func ParseMGConfig(b []byte) (MGConfig, error) {
+	var config MGConfig
+	err := json.Unmarshal(b, &config)
 	return config, err
 }
 

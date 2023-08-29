@@ -10,7 +10,7 @@ import (
 var commitCmd = &cobra.Command{
 	Use:   "commit",
 	Short: "commit all current repos with the same message",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		fmt.Println("commit called")
 	},
 }
