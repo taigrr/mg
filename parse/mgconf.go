@@ -2,6 +2,7 @@ package parse
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -50,19 +51,38 @@ func (m *MGConfig) AddRepo(path, remote string) error {
 	return nil
 }
 
-func (m *MGConfig) Merge(m2 MGConfig) error {
+type Stats struct {
+	Duplicates int
+	NewPaths   []string
+}
+
+func (s Stats) String() string {
+	str := ""
+	for _, v := range s.NewPaths {
+		str += "Added repo " + v + "\n"
+	}
+	str += "\nAdded " + fmt.Sprintf("%d", len(s.NewPaths)) + " new repos\n"
+	str += "Skipped " + fmt.Sprintf("%d", s.Duplicates) + " duplicate repos"
+	return str
+}
+
+func (m *MGConfig) Merge(m2 MGConfig) (Stats, error) {
+	stats := Stats{}
 	for _, v := range m2.Repos {
 		err := m.AddRepo(v.Path, v.Remote)
 		switch err {
 		case errAlreadyRegistered:
+			stats.Duplicates++
 			continue
 		case nil:
+			stats.NewPaths = append(stats.NewPaths, v.Path)
 			continue
 		default:
-			return err
+
+			return stats, err
 		}
 	}
-	return nil
+	return stats, nil
 }
 
 // LoadMGConfig loads the mgconfig file from the XDG_CONFIG_HOME directory

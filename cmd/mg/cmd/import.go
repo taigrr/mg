@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -26,11 +27,12 @@ var importCmd = &cobra.Command{
 				log.Println(err)
 				os.Exit(1)
 			}
-			err = conf.Merge(parsed)
+			stats, err := conf.Merge(parsed)
 			if err != nil {
 				log.Println(err)
 				os.Exit(1)
 			}
+			fmt.Println(stats)
 		} else {
 			f, err := os.ReadFile(args[0])
 			if err != nil {
@@ -42,11 +44,12 @@ var importCmd = &cobra.Command{
 				log.Println(err)
 				os.Exit(1)
 			}
-			err = conf.Merge(parsed)
+			stats, err := conf.Merge(parsed)
 			if err != nil {
 				log.Println(err)
 				os.Exit(1)
 			}
+			fmt.Println(stats)
 		}
 		err := conf.Save()
 		if err != nil {
