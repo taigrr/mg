@@ -3,7 +3,6 @@ package parse
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,7 +59,7 @@ func LoadMRConfig() (MRConfig, error) {
 	if s.IsDir() {
 		return MRConfig{}, errors.New("expected mrconfig file but got a directory")
 	}
-	f, err := ioutil.ReadFile(mrconfPath)
+	f, err := os.ReadFile(mrconfPath)
 	if err != nil {
 		return MRConfig{}, err
 	}
