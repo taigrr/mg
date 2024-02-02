@@ -12,7 +12,7 @@ import (
 	"github.com/taigrr/mg/parse"
 )
 
-// pullCmd represents the pull command
+// cloneCmd represents the clone command
 var (
 	cloneCmd = &cobra.Command{
 		Use:   "clone",
@@ -33,7 +33,7 @@ var (
 			}
 			repoChan := make(chan parse.Repo, len(conf.Repos))
 			errs := []RepoError{}
-			alreadyUpToDate := 0
+			alreadyCloned := 0
 			mutex := sync.Mutex{}
 			wg := sync.WaitGroup{}
 			wg.Add(len(conf.Repos))
@@ -43,9 +43,12 @@ var (
 						_, err := git.PlainOpenWithOptions(repo.Remote, &(git.PlainOpenOptions{DetectDotGit: true}))
 						if err == nil {
 							log.Printf("already cloned: %s\n", repo.Path)
+							mutex.Lock()
+							alreadyCloned++
+							mutex.Unlock()
 						} else if err == git.ErrRepositoryNotExists {
 							log.Printf("attempting clone: %s\n", repo)
-							_, err := git.PlainClone(repo.Path, false, &git.CloneOptions{
+							_, err = git.PlainClone(repo.Path, false, &git.CloneOptions{
 								URL: repo.Remote,
 							})
 							if err != nil {
@@ -80,14 +83,14 @@ var (
 			}
 			lenErrs := len(errs)
 			fmt.Println()
-			fmt.Printf("successfully pulled %d/%d repos\n", len(conf.Repos)-lenErrs, len(conf.Repos))
-			fmt.Printf("%d repos already up to date\n", alreadyUpToDate)
-			fmt.Printf("failed to pull %d/%d repos\n", lenErrs, len(conf.Repos))
+			fmt.Printf("successfully cloned %d/%d repos\n", len(conf.Repos)-lenErrs, len(conf.Repos))
+			fmt.Printf("%d repos already cloned\n", alreadyCloned)
+			fmt.Printf("failed to clone %d/%d repos\n", lenErrs, len(conf.Repos))
 		},
 	}
 )
 
 func init() {
-	rootCmd.AddCommand(pullCmd)
-	pullCmd.Flags().IntVarP(&jobs, "jobs", "j", 1, "number of jobs to run in parallel")
+	rootCmd.AddCommand(cloneCmd)
+	cloneCmd.Flags().IntVarP(&jobs, "jobs", "j", 1, "number of jobs to run in parallel")
 }
