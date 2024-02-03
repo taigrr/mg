@@ -40,14 +40,16 @@ var (
 			for i := 0; i < jobs; i++ {
 				go func() {
 					for repo := range repoChan {
-						_, err := git.PlainOpenWithOptions(repo.Remote, &(git.PlainOpenOptions{DetectDotGit: true}))
+						_, err := git.PlainOpenWithOptions(repo.Path, &(git.PlainOpenOptions{DetectDotGit: true}))
 						if err == nil {
 							log.Printf("already cloned: %s\n", repo.Path)
 							mutex.Lock()
 							alreadyCloned++
 							mutex.Unlock()
+							wg.Done()
+							continue
 						} else if err == git.ErrRepositoryNotExists {
-							log.Printf("attempting clone: %s\n", repo)
+							log.Printf("attempting clone: %s\n", repo.Path)
 							_, err = git.PlainClone(repo.Path, false, &git.CloneOptions{
 								URL: repo.Remote,
 							})
@@ -73,10 +75,12 @@ var (
 					}
 				}()
 			}
+			fmt.Println(len(conf.Repos))
 			for _, repo := range conf.Repos {
 				repoChan <- repo
 			}
 			close(repoChan)
+			fmt.Println("waiting...")
 			wg.Wait()
 			for _, err := range errs {
 				log.Printf("error pulling %s: %s\n", err.Repo, err.Error)
