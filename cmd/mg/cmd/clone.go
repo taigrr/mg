@@ -61,14 +61,14 @@ var (
 								wg.Done()
 								continue
 							}
-							fmt.Printf("successfully cloned %s\n", repo)
+							fmt.Printf("successfully cloned %s\n", repo.Path)
 							wg.Done()
 							continue
 						} else {
 							mutex.Lock()
 							errs = append(errs, RepoError{Error: err, Repo: repo.Path})
 							mutex.Unlock()
-							log.Printf("clone failed for %s: %v\n", repo, err)
+							log.Printf("clone failed for %s: %v\n", repo.Path, err)
 							wg.Done()
 							continue
 						}
