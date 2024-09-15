@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 
 	git "github.com/go-git/go-git/v5"
@@ -37,34 +38,26 @@ var (
 			mutex := sync.Mutex{}
 			wg := sync.WaitGroup{}
 			wg.Add(len(conf.Repos))
-			for i := 0; i < jobs; i++ {
-				go func() {
-					for repo := range repoChan {
-						_, err := git.PlainOpenWithOptions(repo.Path, &(git.PlainOpenOptions{DetectDotGit: true}))
-						if err == nil {
-							log.Printf("already cloned: %s\n", repo.Path)
-							mutex.Lock()
-							alreadyCloned++
-							mutex.Unlock()
-							wg.Done()
-							continue
-						} else if err == git.ErrRepositoryNotExists {
-							log.Printf("attempting clone: %s\n", repo.Path)
-							_, err = git.PlainClone(repo.Path, false, &git.CloneOptions{
-								URL: repo.Remote,
-							})
-							if err != nil {
-								mutex.Lock()
-								errs = append(errs, RepoError{Error: err, Repo: repo.Path})
-								mutex.Unlock()
-								log.Printf("clone failed for %s: %v\n", repo.Path, err)
-								wg.Done()
-								continue
-							}
-							fmt.Printf("successfully cloned %s\n", repo.Path)
-							wg.Done()
-							continue
-						} else {
+			cloneFunc := func() {
+				for repo := range repoChan {
+					_, err := git.PlainOpenWithOptions(repo.Path, &(git.PlainOpenOptions{DetectDotGit: true}))
+					if err == nil {
+						log.Printf("already cloned: %s\n", repo.Path)
+						mutex.Lock()
+						alreadyCloned++
+						mutex.Unlock()
+						wg.Done()
+						continue
+					} else if err == git.ErrRepositoryNotExists {
+						log.Printf("attempting clone: %s\n", repo.Path)
+						parentPath := filepath.Dir(repo.Path)
+						if _, err := os.Stat(parentPath); err != nil {
+							os.MkdirAll(parentPath, os.ModeDir)
+						}
+						_, err = git.PlainClone(repo.Path, false, &git.CloneOptions{
+							URL: repo.Remote,
+						})
+						if err != nil {
 							mutex.Lock()
 							errs = append(errs, RepoError{Error: err, Repo: repo.Path})
 							mutex.Unlock()
@@ -72,8 +65,21 @@ var (
 							wg.Done()
 							continue
 						}
+						fmt.Printf("successfully cloned %s\n", repo.Path)
+						wg.Done()
+						continue
+					} else {
+						mutex.Lock()
+						errs = append(errs, RepoError{Error: err, Repo: repo.Path})
+						mutex.Unlock()
+						log.Printf("clone failed for %s: %v\n", repo.Path, err)
+						wg.Done()
+						continue
 					}
-				}()
+				}
+			}
+			for i := 0; i < jobs; i++ {
+				go cloneFunc()
 			}
 			fmt.Println(len(conf.Repos))
 			for _, repo := range conf.Repos {
