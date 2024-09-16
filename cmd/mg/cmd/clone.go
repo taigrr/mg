@@ -52,7 +52,7 @@ var (
 						log.Printf("attempting clone: %s\n", repo.Path)
 						parentPath := filepath.Dir(repo.Path)
 						if _, err := os.Stat(parentPath); err != nil {
-							os.MkdirAll(parentPath, os.ModeDir)
+							os.MkdirAll(parentPath, os.ModeDir|os.ModePerm)
 						}
 						_, err = git.PlainClone(repo.Path, false, &git.CloneOptions{
 							URL: repo.Remote,
