@@ -32,9 +32,9 @@ func (m MRConfig) ToMGConfig() MGConfig {
 	mgconf := MGConfig(m)
 	for i, repo := range mgconf.Repos {
 		checkout := repo.Remote
-		if strings.HasPrefix(checkout, "git clone '") {
+		if after, ok := strings.CutPrefix(checkout, "git clone '"); ok {
 			// git clone 'git@bitbucket.org:taigrr/mg.git' 'mg'
-			remote := strings.TrimPrefix(checkout, "git clone '")
+			remote := after
 			sp := strings.Split(remote, "' '")
 			remote = sp[0]
 			mgconf.Repos[i].Remote = remote

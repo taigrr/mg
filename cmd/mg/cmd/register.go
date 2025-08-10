@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
@@ -52,6 +53,16 @@ var registerCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		path = newPath.Filesystem.Root()
+
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			log.Println("Unable to get home directory")
+			os.Exit(1)
+		}
+		if strings.HasPrefix(path, homeDir) {
+			path = "$HOME" + path[len(homeDir):]
+		}
+
 		for _, v := range conf.Repos {
 			if v.Path == path {
 				fmt.Printf("repo %s already registered\n", path)
