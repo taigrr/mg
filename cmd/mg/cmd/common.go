@@ -3,7 +3,6 @@ package cmd
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/taigrr/mg/parse"
 )
@@ -28,11 +27,6 @@ func GetConfig() parse.MGConfig {
 			}
 		}
 	}
-	homeDir, _ := os.UserHomeDir()
-	for i, repo := range conf.Repos {
-		if strings.HasPrefix(repo.Path, "$HOME") {
-			conf.Repos[i].Path = strings.Replace(repo.Path, "$HOME", homeDir, 1)
-		}
-	}
+	conf.ExpandPaths()
 	return conf
 }

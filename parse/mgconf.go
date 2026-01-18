@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var errAlreadyRegistered = os.ErrExist
@@ -117,6 +118,28 @@ func ParseMGConfig(b []byte) (MGConfig, error) {
 	return config, err
 }
 
+// ExpandPaths expands shell variables in all repo paths using os.ExpandEnv.
+// This allows paths like $HOME/code or $GOPATH/src to work cross-platform.
+func (m *MGConfig) ExpandPaths() {
+	for i := range m.Repos {
+		m.Repos[i].Path = os.ExpandEnv(m.Repos[i].Path)
+	}
+}
+
+// CollapsePaths replaces the user's home directory with $HOME in all repo paths.
+// This allows config files to be shared across machines with different home paths.
+func (m *MGConfig) CollapsePaths() {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return
+	}
+	for i := range m.Repos {
+		if strings.HasPrefix(m.Repos[i].Path, home) {
+			m.Repos[i].Path = "$HOME" + m.Repos[i].Path[len(home):]
+		}
+	}
+}
+
 func (m MGConfig) Save() error {
 	mgConf := os.Getenv("MGCONFIG")
 	if mgConf == "" {
@@ -133,7 +156,15 @@ func (m MGConfig) Save() error {
 		}
 		mgConf = filepath.Join(confDir, "mgconfig")
 	}
-	b, err := json.MarshalIndent(m, "", "  ")
+	// Collapse paths before saving so config is portable
+	toSave := MGConfig{
+		Repos:   make([]Repo, len(m.Repos)),
+		Aliases: m.Aliases,
+	}
+	copy(toSave.Repos, m.Repos)
+	toSave.CollapsePaths()
+
+	b, err := json.MarshalIndent(toSave, "", "  ")
 	if err != nil {
 		return err
 	}
