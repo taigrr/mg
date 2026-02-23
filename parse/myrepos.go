@@ -44,8 +44,7 @@ func (m MRConfig) ToMGConfig() MGConfig {
 }
 
 // LoadMRConfig loads the mrconfig file from the user's home directory
-// and returns a MRConfig struct
-// TODO: load aliases into map instead of hardcoded Unregister prop
+// and returns a MRConfig struct with all repos and aliases from the [DEFAULT] section
 func LoadMRConfig() (MRConfig, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -107,16 +106,8 @@ func LoadMRConfig() (MRConfig, error) {
 			config.Repos[length].Remote = split[1]
 
 		case "default":
-
-			// TODO load text into Aliases map instead of hardcoded Unregister prop
-			switch split[0] {
-			case "unregister":
-				config.Aliases["unregister"] = split[1]
-			case "git_gc":
-				config.Aliases["gc"] = split[1]
-			default:
-				return MRConfig{}, fmt.Errorf("unexpected argument on line %d: %s", n, line)
-			}
+			// Load all DEFAULT section aliases into the map
+			config.Aliases[split[0]] = split[1]
 		}
 	}
 	return config, nil
