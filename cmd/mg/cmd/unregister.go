@@ -11,7 +11,7 @@ import (
 // unregisterCmd represents the unregister command
 var unregisterCmd = &cobra.Command{
 	Use:   "unregister",
-	Short: "add current path to list of repos",
+	Short: "remove current path from list of repos",
 	Run: func(_ *cobra.Command, args []string) {
 		conf := GetConfig()
 		path, err := os.Getwd()
