@@ -51,8 +51,8 @@ func TestExpandPaths(t *testing.T) {
 			expected: []string{"/absolute/path/to/repo"},
 		},
 		{
-			name: "empty repos",
-			input: []Repo{},
+			name:     "empty repos",
+			input:    []Repo{},
 			expected: []string{},
 		},
 		{
@@ -138,8 +138,8 @@ func TestCollapsePaths(t *testing.T) {
 			},
 		},
 		{
-			name: "empty repos",
-			input: []Repo{},
+			name:     "empty repos",
+			input:    []Repo{},
 			expected: []string{},
 		},
 		{
@@ -328,12 +328,12 @@ func TestParseMGConfig(t *testing.T) {
 
 func TestAddRepo(t *testing.T) {
 	tests := []struct {
-		name       string
-		initial    []Repo
-		addPath    string
-		addRemote  string
-		wantErr    bool
-		wantCount  int
+		name      string
+		initial   []Repo
+		addPath   string
+		addRemote string
+		wantErr   bool
+		wantCount int
 	}{
 		{
 			name:      "add to empty",
