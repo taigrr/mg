@@ -44,11 +44,11 @@ mg/
 │   │       ├── register.go  # Register repo (implemented)
 │   │       ├── unregister.go# Unregister repo (implemented)
 │   │       ├── import.go    # Merge configs (implemented)
-│   │       ├── push.go      # Stub
-│   │       ├── fetch.go     # Stub
-│   │       ├── status.go    # Stub
-│   │       ├── diff.go      # Stub
-│   │       ├── commit.go    # Stub
+│   │       ├── push.go      # Push all repos (implemented)
+│   │       ├── fetch.go     # Fetch all repos (implemented)
+│   │       ├── status.go    # Status all repos (implemented)
+│   │       ├── diff.go      # Diff all repos (implemented)
+│   │       ├── commit.go    # Commit staged changes (implemented)
 │   │       └── config.go    # Stub
 │   └── paths/
 │       └── mrpaths.go       # Utility to list repo paths from mrconfig
@@ -67,11 +67,11 @@ mg/
 | `register`   | Implemented | Detects git root, stores `$HOME`  |
 | `unregister` | Implemented | By path or current dir             |
 | `import`     | Implemented | Merge configs, supports stdin `-` |
-| `push`       | Stub        | Prints "push called"               |
-| `fetch`      | Stub        | Prints "fetch called"              |
-| `status`     | Stub        | Prints "status called"             |
-| `diff`       | Stub        | Prints "diff called"               |
-| `commit`     | Stub        | Prints "commit called"             |
+| `push`       | Implemented | Parallel via `-j`, pushes all refs |
+| `fetch`      | Implemented | Parallel via `-j`                  |
+| `status`     | Implemented | Parallel via `-j`, sorted output   |
+| `diff`       | Implemented | Parallel via `-j`, file-level diff |
+| `commit`     | Implemented | Parallel via `-j`, `-m` message    |
 | `config`     | Stub        | Prints "config called"             |
 
 ## Configuration
@@ -221,10 +221,9 @@ go test ./...
 
 ## Known Issues / TODOs
 
-1. Several commands are stubs (push, fetch, status, diff, commit, config)
-2. `parse/mgconf.go:61` has a hint about inefficient string concatenation in a loop
-3. Test coverage is minimal
-4. `unregister` command short description incorrectly says "add current path" (copy-paste error)
+1. `config` command is still a stub
+2. Test coverage is minimal for cmd package (parse package has good coverage)
+3. No integration tests for commands that interact with git repos
 
 ## Error Handling Pattern
 
