@@ -3,7 +3,6 @@ package parse
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -169,5 +168,5 @@ func (m MGConfig) Save() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(mgConf, b, 0o644)
+	return os.WriteFile(mgConf, b, 0o644)
 }

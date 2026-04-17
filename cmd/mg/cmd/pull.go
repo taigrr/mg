@@ -15,7 +15,7 @@ var (
 	jobs    int
 	pullCmd = &cobra.Command{
 		Use:   "pull",
-		Short: "add current path to list of repos",
+		Short: "update all git repos specified in config",
 		Run: func(_ *cobra.Command, args []string) {
 			type RepoError struct {
 				Error error
