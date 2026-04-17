@@ -136,6 +136,6 @@ var diffCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(diffCmd)
+	RootCmd.AddCommand(diffCmd)
 	diffCmd.Flags().IntVarP(&jobs, "jobs", "j", 1, "number of jobs to run in parallel")
 }

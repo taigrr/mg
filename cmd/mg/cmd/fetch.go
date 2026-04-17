@@ -86,6 +86,6 @@ var fetchCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(fetchCmd)
+	RootCmd.AddCommand(fetchCmd)
 	fetchCmd.Flags().IntVarP(&jobs, "jobs", "j", 1, "number of jobs to run in parallel")
 }

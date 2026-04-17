@@ -69,5 +69,5 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(registerCmd)
+	RootCmd.AddCommand(registerCmd)
 }

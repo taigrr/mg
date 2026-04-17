@@ -56,5 +56,5 @@ var unregisterCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(unregisterCmd)
+	RootCmd.AddCommand(unregisterCmd)
 }

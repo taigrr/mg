@@ -117,7 +117,7 @@ var commitCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(commitCmd)
+	RootCmd.AddCommand(commitCmd)
 	commitCmd.Flags().IntVarP(&jobs, "jobs", "j", 1, "number of jobs to run in parallel")
 	commitCmd.Flags().StringVarP(&commitMessage, "message", "m", "", "commit message")
 }

@@ -98,6 +98,6 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(pullCmd)
+	RootCmd.AddCommand(pullCmd)
 	pullCmd.Flags().IntVarP(&jobs, "jobs", "j", 1, "number of jobs to run in parallel")
 }
