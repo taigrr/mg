@@ -85,24 +85,36 @@ func (m *MGConfig) Merge(m2 MGConfig) (Stats, error) {
 	return stats, nil
 }
 
+// MGConfigPath returns the active mgconfig path from MGCONFIG, XDG_CONFIG_HOME,
+// or the default $HOME/.config/mgconfig location.
+func MGConfigPath() (string, error) {
+	mgConf := os.Getenv("MGCONFIG")
+	if mgConf != "" {
+		return mgConf, nil
+	}
+
+	confDir := os.Getenv("XDG_CONFIG_HOME")
+	if confDir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		confDir = filepath.Join(home, ".config")
+	}
+	if _, err := os.Stat(confDir); err != nil {
+		return "", err
+	}
+
+	return filepath.Join(confDir, "mgconfig"), nil
+}
+
 // LoadMGConfig loads the mgconfig file from the XDG_CONFIG_HOME directory
 // or from the default location of $HOME/.config/mgconfig
 // If the file is not found, an error is returned
 func LoadMGConfig() (MGConfig, error) {
-	mgConf := os.Getenv("MGCONFIG")
-	if mgConf == "" {
-		confDir := os.Getenv("XDG_CONFIG_HOME")
-		if confDir == "" {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return MGConfig{}, err
-			}
-			confDir = filepath.Join(home, ".config")
-			if _, err := os.Stat(confDir); err != nil {
-				return MGConfig{}, err
-			}
-		}
-		mgConf = filepath.Join(confDir, "mgconfig")
+	mgConf, err := MGConfigPath()
+	if err != nil {
+		return MGConfig{}, err
 	}
 	file, err := os.ReadFile(mgConf)
 	if err != nil {
@@ -141,20 +153,9 @@ func (m *MGConfig) CollapsePaths() {
 }
 
 func (m MGConfig) Save() error {
-	mgConf := os.Getenv("MGCONFIG")
-	if mgConf == "" {
-		confDir := os.Getenv("XDG_CONFIG_HOME")
-		if confDir == "" {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return err
-			}
-			confDir = filepath.Join(home, ".config")
-			if _, err := os.Stat(confDir); err != nil {
-				return err
-			}
-		}
-		mgConf = filepath.Join(confDir, "mgconfig")
+	mgConf, err := MGConfigPath()
+	if err != nil {
+		return err
 	}
 	// Collapse paths before saving so config is portable
 	toSave := MGConfig{

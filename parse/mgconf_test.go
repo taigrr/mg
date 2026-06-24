@@ -269,6 +269,55 @@ func TestSave_CollapsesPaths(t *testing.T) {
 	}
 }
 
+func TestMGConfigPath(t *testing.T) {
+	t.Run("uses MGCONFIG", func(t *testing.T) {
+		t.Setenv("MGCONFIG", "/tmp/custom-mgconfig")
+
+		path, err := MGConfigPath()
+		if err != nil {
+			t.Fatalf("MGConfigPath() error = %v", err)
+		}
+		if path != "/tmp/custom-mgconfig" {
+			t.Fatalf("MGConfigPath() = %q, want %q", path, "/tmp/custom-mgconfig")
+		}
+	})
+
+	t.Run("uses XDG_CONFIG_HOME", func(t *testing.T) {
+		configDir := t.TempDir()
+		t.Setenv("MGCONFIG", "")
+		t.Setenv("XDG_CONFIG_HOME", configDir)
+
+		path, err := MGConfigPath()
+		if err != nil {
+			t.Fatalf("MGConfigPath() error = %v", err)
+		}
+		wantPath := filepath.Join(configDir, "mgconfig")
+		if path != wantPath {
+			t.Fatalf("MGConfigPath() = %q, want %q", path, wantPath)
+		}
+	})
+
+	t.Run("uses default config dir", func(t *testing.T) {
+		homeDir := t.TempDir()
+		configDir := filepath.Join(homeDir, ".config")
+		if err := os.Mkdir(configDir, 0o755); err != nil {
+			t.Fatalf("failed to create config dir: %v", err)
+		}
+		t.Setenv("HOME", homeDir)
+		t.Setenv("MGCONFIG", "")
+		t.Setenv("XDG_CONFIG_HOME", "")
+
+		path, err := MGConfigPath()
+		if err != nil {
+			t.Fatalf("MGConfigPath() error = %v", err)
+		}
+		wantPath := filepath.Join(configDir, "mgconfig")
+		if path != wantPath {
+			t.Fatalf("MGConfigPath() = %q, want %q", path, wantPath)
+		}
+	})
+}
+
 func TestParseMGConfig(t *testing.T) {
 	tests := []struct {
 		name      string
