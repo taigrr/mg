@@ -12,10 +12,27 @@ This app will support the following subcommands:
 - mg fetch
 - mg register
 - mg unregister
+- mg config
 
 Passing the `-jX` argument will spin up X jobs simultaneously
 
-mg supports loading an existing ~/.mrconfig and migrating it to ~/.config/mg.conf, provided no mg.conf file exists.
+mg stores configuration in `~/.config/mgconfig` by default. Set `MGCONFIG` to use a custom path, or `XDG_CONFIG_HOME` to use a custom config directory.
+
+mg supports loading an existing `~/.mrconfig` and migrating it to `~/.config/mgconfig`, provided no mgconfig file exists.
+
+## Configuration
+
+Print the active config path:
+
+```bash
+mg config
+```
+
+Print the active config as JSON:
+
+```bash
+mg config show
+```
 
 
 ## Improvements over mr:

@@ -49,7 +49,7 @@ mg/
 │   │       ├── status.go    # Status all repos (implemented)
 │   │       ├── diff.go      # Diff all repos (implemented)
 │   │       ├── commit.go    # Commit staged changes (implemented)
-│   │       └── config.go    # Stub
+│   │       └── config.go    # Config inspection commands
 │   └── paths/
 │       └── mrpaths.go       # Utility to list repo paths from mrconfig
 └── parse/
@@ -72,7 +72,7 @@ mg/
 | `status`     | Implemented | Parallel via `-j`, sorted output   |
 | `diff`       | Implemented | Parallel via `-j`, file-level diff |
 | `commit`     | Implemented | Parallel via `-j`, `-m` message    |
-| `config`     | Stub        | Prints "config called"             |
+| `config`     | Implemented | Prints config path and JSON output |
 
 ## Configuration
 
@@ -213,7 +213,7 @@ type Repo struct {
 
 ## Testing
 
-Tests are minimal. Only `parse/myrepos_test.go` exists with a skeleton structure:
+Run the full test suite with:
 
 ```bash
 go test ./...
@@ -221,9 +221,8 @@ go test ./...
 
 ## Known Issues / TODOs
 
-1. `config` command is still a stub
-2. Test coverage is minimal for cmd package (parse package has good coverage)
-3. No integration tests for commands that interact with git repos
+1. No integration tests for commands that interact with git repos
+2. Command packages still have room for broader behavior tests
 
 ## Error Handling Pattern
 
