@@ -3,12 +3,12 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
 	"sort"
-	"sync"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
+
+	"github.com/taigrr/mg/parse"
 )
 
 type repoStatus struct {
@@ -22,91 +22,71 @@ type repoStatus struct {
 	Clean    bool
 }
 
+type statusResult struct {
+	status repoStatus
+	err    error
+	repo   string
+}
+
+// changeCode returns the effective change code for a file, preferring the
+// worktree state and falling back to the staging state when unmodified.
+func changeCode(s *git.FileStatus) git.StatusCode {
+	if s.Worktree == git.Unmodified {
+		return s.Staging
+	}
+	return s.Worktree
+}
+
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "get the combined git status for all git repos",
 	Run: func(_ *cobra.Command, args []string) {
-		type RepoError struct {
-			Error error
-			Repo  string
-		}
-		if jobs < 1 {
-			log.Println("jobs must be greater than 0")
-			os.Exit(1)
-		}
-		conf := GetConfig()
-		if len(args) > 0 {
-			log.Println("too many arguments")
-			os.Exit(1)
-		}
-		repoChan := make(chan string, len(conf.Repos))
-		var (
-			errs     []RepoError
-			statuses []repoStatus
-			mutex    sync.Mutex
-			wg       sync.WaitGroup
-		)
-		wg.Add(len(conf.Repos))
-		for i := 0; i < jobs; i++ {
-			go func() {
-				for repo := range repoChan {
-					r, err := git.PlainOpenWithOptions(repo, &git.PlainOpenOptions{DetectDotGit: true})
-					if err != nil {
-						mutex.Lock()
-						errs = append(errs, RepoError{Error: err, Repo: repo})
-						mutex.Unlock()
-						wg.Done()
-						continue
-					}
-					w, err := r.Worktree()
-					if err != nil {
-						mutex.Lock()
-						errs = append(errs, RepoError{Error: err, Repo: repo})
-						mutex.Unlock()
-						wg.Done()
-						continue
-					}
-					st, err := w.Status()
-					if err != nil {
-						mutex.Lock()
-						errs = append(errs, RepoError{Error: err, Repo: repo})
-						mutex.Unlock()
-						wg.Done()
-						continue
-					}
-					rs := repoStatus{Path: repo, Clean: st.IsClean()}
-					for _, s := range st {
-						code := s.Worktree
-						if code == git.Unmodified {
-							code = s.Staging
-						}
-						switch code {
-						case git.Modified:
-							rs.Modified++
-						case git.Added:
-							rs.Added++
-						case git.Deleted:
-							rs.Deleted++
-						case git.Renamed:
-							rs.Renamed++
-						case git.Copied:
-							rs.Copied++
-						case git.Untracked:
-							rs.Untrack++
-						}
-					}
-					mutex.Lock()
-					statuses = append(statuses, rs)
-					mutex.Unlock()
-					wg.Done()
+		repos := commandRepos(args)
+		results := runPool(repos, func(repo parse.Repo) statusResult {
+			path := repo.Path
+			r, err := git.PlainOpenWithOptions(path, &git.PlainOpenOptions{DetectDotGit: true})
+			if err != nil {
+				return statusResult{repo: path, err: err}
+			}
+			w, err := r.Worktree()
+			if err != nil {
+				return statusResult{repo: path, err: err}
+			}
+			st, err := w.Status()
+			if err != nil {
+				return statusResult{repo: path, err: err}
+			}
+			rs := repoStatus{Path: path, Clean: st.IsClean()}
+			for _, s := range st {
+				switch changeCode(s) {
+				case git.Modified:
+					rs.Modified++
+				case git.Added:
+					rs.Added++
+				case git.Deleted:
+					rs.Deleted++
+				case git.Renamed:
+					rs.Renamed++
+				case git.Copied:
+					rs.Copied++
+				case git.Untracked:
+					rs.Untrack++
 				}
-			}()
+			}
+			return statusResult{repo: path, status: rs}
+		})
+
+		var (
+			errs     []statusResult
+			statuses []repoStatus
+		)
+		for _, res := range results {
+			if res.err != nil {
+				errs = append(errs, res)
+				continue
+			}
+			statuses = append(statuses, res.status)
 		}
-		for _, repo := range conf.Repos {
-			repoChan <- repo.Path
-		}
-		close(repoChan)
-		wg.Wait()
 
 		sort.Slice(statuses, func(i, j int) bool {
 			return statuses[i].Path < statuses[j].Path
@@ -139,14 +119,14 @@ var statusCmd = &cobra.Command{
 			}
 		}
 
-		for _, err := range errs {
-			log.Printf("error reading %s: %s\n", err.Repo, err.Error)
+		for _, res := range errs {
+			log.Printf("error reading %s: %s\n", res.repo, res.err)
 		}
 
 		fmt.Println()
-		fmt.Printf("%d/%d repos have uncommitted changes\n", dirtyCount, len(conf.Repos))
+		fmt.Printf("%d/%d repos have uncommitted changes\n", dirtyCount, len(repos))
 		if len(errs) > 0 {
-			fmt.Printf("failed to read %d/%d repos\n", len(errs), len(conf.Repos))
+			fmt.Printf("failed to read %d/%d repos\n", len(errs), len(repos))
 		}
 	},
 }

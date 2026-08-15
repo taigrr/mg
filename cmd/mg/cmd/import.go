@@ -16,43 +16,31 @@ var importCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		conf := GetConfig()
+		var (
+			data []byte
+			err  error
+		)
 		if args[0] == "-" {
-			f, err := io.ReadAll(os.Stdin)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
-			parsed, err := parse.ParseMGConfig(f)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
-			stats, err := conf.Merge(parsed)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
-			fmt.Println(stats)
+			data, err = io.ReadAll(os.Stdin)
 		} else {
-			f, err := os.ReadFile(args[0])
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
-			parsed, err := parse.ParseMGConfig(f)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
-			stats, err := conf.Merge(parsed)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
-			fmt.Println(stats)
+			data, err = os.ReadFile(args[0])
 		}
-		err := conf.Save()
 		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
+		parsed, err := parse.ParseMGConfig(data)
+		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
+		stats, err := conf.Merge(parsed)
+		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(stats)
+		if err := conf.Save(); err != nil {
 			log.Println(err)
 			os.Exit(1)
 		}

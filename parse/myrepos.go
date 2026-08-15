@@ -62,52 +62,43 @@ func LoadMRConfig() (MRConfig, error) {
 	if err != nil {
 		return MRConfig{}, err
 	}
-	text := string(f)
-	lines := strings.Split(text, "\n")
 	config := MRConfig{
 		Aliases: make(map[string]string),
 		Repos:   []Repo{},
 	}
 
-	length := -1
-	mode := "default"
-	for n, line := range lines {
+	inRepo := false
+	for n, line := range strings.Split(string(f), "\n") {
 		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		// ignore comments in mrconfig
-		if strings.HasPrefix(line, "#") {
+		// skip blank lines and comments
+		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
 		if line == "[DEFAULT]" {
-			mode = "default"
+			inRepo = false
 			continue
-		} else if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
-			length++
+		}
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
 			path := strings.Trim(line, "[]")
 			if !strings.HasPrefix(path, "/") {
 				path = filepath.Join(home, path)
 			}
-			mode = "repo"
 			config.Repos = append(config.Repos, Repo{Path: path})
+			inRepo = true
 			continue
 		}
-		split := strings.SplitN(line, " = ", 2)
-		if len(split) != 2 {
+		key, value, ok := strings.Cut(line, " = ")
+		if !ok {
 			return MRConfig{}, fmt.Errorf("unexpected argument on line %d: %s", n, line)
 		}
-		switch mode {
-		case "repo":
-			if split[0] != "checkout" {
+		if inRepo {
+			if key != "checkout" {
 				return MRConfig{}, fmt.Errorf("unexpected argument on line %d: %s", n, line)
 			}
-
-			config.Repos[length].Remote = split[1]
-
-		case "default":
+			config.Repos[len(config.Repos)-1].Remote = value
+		} else {
 			// Load all DEFAULT section aliases into the map
-			config.Aliases[split[0]] = split[1]
+			config.Aliases[key] = value
 		}
 	}
 	return config, nil
