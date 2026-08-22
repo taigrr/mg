@@ -1,17 +1,25 @@
 # mg
 
+[![CI](https://github.com/taigrr/mg/actions/workflows/ci.yml/badge.svg)](https://github.com/taigrr/mg/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/taigrr/mg.svg)](https://pkg.go.dev/github.com/taigrr/mg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/taigrr/mg)](https://goreportcard.com/report/github.com/taigrr/mg)
+[![License: 0BSD](https://img.shields.io/badge/License-0BSD-blue.svg)](./LICENSE)
+
 Golang replacement for [myrepos](https://myrepos.branchable.com/) which only supports git repos.
 
 This app will support the following subcommands:
 
+- mg clone
 - mg commit
 - mg push
 - mg status
 - mg diff
 - mg pull
 - mg fetch
+- mg gc
 - mg register
 - mg unregister
+- mg import
 - mg config
 
 Passing the `-jX` argument will spin up X jobs simultaneously
@@ -47,3 +55,8 @@ mg config show
 1. If you want to use the [mr plugin ecosystem](https://myrepos.branchable.com/#:~:text=repos%20to%20myrepos-,related%20software,-garden%3A%20manage%20git)
 
 *: custom-registered commands may rely on external applications.
+
+## License
+
+Released under the [0BSD](./LICENSE) license.
+
