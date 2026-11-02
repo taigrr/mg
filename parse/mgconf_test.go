@@ -577,3 +577,36 @@ func TestGetRepoPaths(t *testing.T) {
 		}
 	}
 }
+
+func TestSavePreservesHomePrefixSiblings(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("MGCONFIG", filepath.Join(t.TempDir(), "mgconfig"))
+	paths := []string{home, filepath.Join(home, "repo"), home + "-other/repo", home + "2/repo"}
+	conf := MGConfig{}
+	for _, path := range paths {
+		conf.Repos = append(conf.Repos, Repo{Path: path})
+	}
+	if err := conf.Save(); err != nil {
+		t.Fatal(err)
+	}
+	saved, err := LoadMGConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantStored := []string{"$HOME", "$HOME/repo", paths[2], paths[3]}
+	for index, want := range wantStored {
+		if got := saved.Repos[index].Path; got != want {
+			t.Errorf("stored path %d = %q, want %q", index, got, want)
+		}
+	}
+	saved.ExpandPaths()
+	for index, want := range paths {
+		if got := saved.Repos[index].Path; got != want {
+			t.Errorf("roundtrip path %d = %q, want %q", index, got, want)
+		}
+		if got := conf.Repos[index].Path; got != want {
+			t.Errorf("Save mutated path %d = %q, want %q", index, got, want)
+		}
+	}
+}
