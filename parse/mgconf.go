@@ -146,7 +146,7 @@ func (m *MGConfig) CollapsePaths() {
 		return
 	}
 	for i := range m.Repos {
-		if strings.HasPrefix(m.Repos[i].Path, home) {
+		if m.Repos[i].Path == home || strings.HasPrefix(m.Repos[i].Path, home+string(os.PathSeparator)) {
 			m.Repos[i].Path = "$HOME" + m.Repos[i].Path[len(home):]
 		}
 	}
