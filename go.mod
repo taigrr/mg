@@ -2,6 +2,8 @@ module github.com/taigrr/mg
 
 go 1.27.2
 
+toolchain go1.27.3
+
 require (
 	github.com/charmbracelet/fang v1.0.0
 	github.com/go-git/go-git/v5 v5.19.3
