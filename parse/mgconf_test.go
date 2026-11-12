@@ -610,3 +610,33 @@ func TestSavePreservesHomePrefixSiblings(t *testing.T) {
 		}
 	}
 }
+
+func TestMergePreservesRepoAliases(t *testing.T) {
+	existing := Repo{Path: "/existing", Remote: "original", Aliases: map[string]string{"sync": "git fetch"}}
+	conf := MGConfig{Repos: []Repo{existing}}
+	incoming := MGConfig{Repos: []Repo{
+		{Path: "/existing", Remote: "replacement", Aliases: map[string]string{"sync": "git pull"}},
+		{Path: "/new", Remote: "new-remote", Aliases: map[string]string{"sync": "git pull", "clean": "git gc"}},
+	}}
+	stats, err := conf.Merge(incoming)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats.Duplicates != 1 || len(stats.NewPaths) != 1 || stats.NewPaths[0] != "/new" {
+		t.Fatalf("unexpected stats: %+v", stats)
+	}
+	if conf.Repos[0].Remote != "original" || conf.Repos[0].Aliases["sync"] != "git fetch" {
+		t.Fatalf("duplicate replaced existing repo: %+v", conf.Repos[0])
+	}
+	if conf.Repos[1].Remote != "new-remote" || conf.Repos[1].Aliases["sync"] != "git pull" || conf.Repos[1].Aliases["clean"] != "git gc" {
+		t.Fatalf("import lost repo data: %+v", conf.Repos[1])
+	}
+	incoming.Repos[1].Aliases["sync"] = "changed"
+	if conf.Repos[1].Aliases["sync"] != "git pull" {
+		t.Fatal("merged aliases share input map")
+	}
+	conf.Repos[1].Aliases["clean"] = "changed"
+	if incoming.Repos[1].Aliases["clean"] != "git gc" {
+		t.Fatal("input aliases share merged map")
+	}
+}

@@ -28,7 +28,10 @@ var cloneCmd = &cobra.Command{
 				log.Printf("attempting clone: %s\n", repo.Path)
 				parentPath := filepath.Dir(repo.Path)
 				if _, err := os.Stat(parentPath); err != nil {
-					os.MkdirAll(parentPath, os.ModeDir|os.ModePerm)
+					if err := os.MkdirAll(parentPath, os.ModeDir|os.ModePerm); err != nil {
+						log.Printf("clone failed for %s: %v\n", repo.Path, err)
+						return repoOutcome{repo: repo.Path, err: err}
+					}
 				}
 				if _, err := git.PlainClone(repo.Path, false, &git.CloneOptions{URL: repo.Remote}); err != nil {
 					log.Printf("clone failed for %s: %v\n", repo.Path, err)
