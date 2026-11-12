@@ -59,7 +59,10 @@ var registerCmd = &cobra.Command{
 				os.Exit(0)
 			}
 		}
-		conf.AddRepo(path, url)
+		if err := conf.AddRepo(path, url); err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
 		err = conf.Save()
 		if err != nil {
 			log.Println(err)
