@@ -3,6 +3,7 @@ package parse
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -75,6 +76,8 @@ func (m *MGConfig) Merge(m2 MGConfig) (Stats, error) {
 			stats.Duplicates++
 			continue
 		case nil:
+			// Keep imported repo commands without sharing the input alias map.
+			m.Repos[len(m.Repos)-1].Aliases = maps.Clone(v.Aliases)
 			stats.NewPaths = append(stats.NewPaths, v.Path)
 			continue
 		default:
