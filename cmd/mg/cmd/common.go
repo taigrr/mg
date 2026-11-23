@@ -10,6 +10,10 @@ import (
 func GetConfig() parse.MGConfig {
 	conf, err := parse.LoadMGConfig()
 	if err != nil {
+		if !os.IsNotExist(err) {
+			log.Println(err)
+			os.Exit(1)
+		}
 		if os.IsNotExist(err) {
 			// Try to load mr config instead
 			mrconf, err := parse.LoadMRConfig()
